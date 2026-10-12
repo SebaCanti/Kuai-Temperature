@@ -74,7 +74,15 @@
     return { year: d.getUTCFullYear(), week: Math.ceil(((d - yearStart) / 86400000 + 1) / 7) };
   }
 
-  const api = { MAX_CODES, parseCodes, repoFromLocation, jobState, codeStates, summary, fmtElapsed, isoWeek };
+  // Rain right now (not snow): rain or showers falling, or a WMO weather code for drizzle, rain, showers or thunderstorm.
+  function isRaining(current) {
+    if (!current) return false;
+    const code = current.weather_code;
+    const rainCode = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
+    return rainCode || current.rain > 0 || current.showers > 0;
+  }
+
+  const api = { MAX_CODES, parseCodes, repoFromLocation, jobState, codeStates, summary, fmtElapsed, isoWeek, isRaining };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KT = api;
 })(typeof self !== 'undefined' ? self : this);

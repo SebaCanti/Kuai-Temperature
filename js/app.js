@@ -234,20 +234,23 @@
     { zh: '武汉', lat: 30.59, lon: 114.31 },
     { zh: '圣地亚哥（智利）', lat: -33.45, lon: -70.67 },
   ];
-  let temps = [];
+  let weather = []; // per city: { temp, rain }
   const renderTicker = () => {
     const { year, week } = KT.isoWeek(new Date());
     const parts = [`今天我们在第${week}周（${year}年）`];
-    CITIES.forEach((c, i) => parts.push(`${c.zh} ${temps[i] != null ? Math.round(temps[i]) + '°C' : '--°C'}`));
+    CITIES.forEach((c, i) => {
+      const w = weather[i];
+      parts.push(`${c.zh} ${w && w.temp != null ? Math.round(w.temp) + '°C' : '--°C'}${w && w.rain ? ' 🌧️' : ''}`);
+    });
     const text = `${parts.join(' ▸ ')} ▸ `;
     $('tickerText').textContent = $('tickerText2').textContent = text.repeat(6);
   };
   const loadTemps = async () => {
     try {
-      const q = `latitude=${CITIES.map(c => c.lat)}&longitude=${CITIES.map(c => c.lon)}&current=temperature_2m`;
+      const q = `latitude=${CITIES.map(c => c.lat)}&longitude=${CITIES.map(c => c.lon)}&current=temperature_2m,rain,showers,weather_code`;
       const res = await fetch(`https://api.open-meteo.com/v1/forecast?${q}`);
       const data = await res.json();
-      temps = [].concat(data).map(d => d && d.current ? d.current.temperature_2m : null);
+      weather = [].concat(data).map(d => d && d.current ? { temp: d.current.temperature_2m, rain: KT.isRaining(d.current) } : null);
     } catch {}
     renderTicker();
   };
