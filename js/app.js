@@ -225,14 +225,33 @@
   tick();
   setInterval(tick, 10000);
 
-  // ── Week ticker (Chinese): "Today we are in week N" ──
-  const week = () => {
+  // ── Bottom ticker (Chinese): week of the year + current temperature in each city ──
+  // Open-Meteo: free, no key, allows browser requests.
+  const CITIES = [
+    { zh: '广州', lat: 23.13, lon: 113.26 },
+    { zh: '上海', lat: 31.23, lon: 121.47 },
+    { zh: '圣地亚哥（智利）', lat: -33.45, lon: -70.67 },
+  ];
+  let temps = [];
+  const renderTicker = () => {
     const { year, week } = KT.isoWeek(new Date());
-    const text = `今天我们在第${week}周（${year}年） ▸ `;
-    $('tickerText').textContent = $('tickerText2').textContent = text.repeat(4);
+    const parts = [`今天我们在第${week}周（${year}年）`];
+    CITIES.forEach((c, i) => parts.push(`${c.zh} ${temps[i] != null ? Math.round(temps[i]) + '°C' : '--°C'}`));
+    const text = `${parts.join(' ▸ ')} ▸ `;
+    $('tickerText').textContent = $('tickerText2').textContent = text.repeat(6);
   };
-  week();
-  setInterval(week, 60 * 60 * 1000);
+  const loadTemps = async () => {
+    try {
+      const q = `latitude=${CITIES.map(c => c.lat)}&longitude=${CITIES.map(c => c.lon)}&current=temperature_2m`;
+      const res = await fetch(`https://api.open-meteo.com/v1/forecast?${q}`);
+      const data = await res.json();
+      temps = [].concat(data).map(d => d && d.current ? d.current.temperature_2m : null);
+    } catch {}
+    renderTicker();
+  };
+  renderTicker();
+  loadTemps();
+  setInterval(loadTemps, 30 * 60 * 1000);
   // Running timers move every second without hitting the API.
   setInterval(() => { if (current && !current.finished && lastStates.length) renderRows(lastStates); }, 1000);
 

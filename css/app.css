@@ -148,7 +148,7 @@ main { padding-bottom: 72px; }
   padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
   box-shadow: 0 -6px 20px rgba(110, 243, 255, .15);
 }
-.ticker-track { display: flex; width: max-content; animation: ticker 40s linear infinite; }
+.ticker-track { display: flex; width: max-content; animation: ticker 150s linear infinite; }
 .ticker-track span { white-space: nowrap; font: 700 20px/1.2 "Noto Sans SC", sans-serif; letter-spacing: 2px; padding-right: 0; }
 @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .ticker-track { animation-duration: 120s; } }
