@@ -27,9 +27,9 @@
         ...(opts.body ? { 'Content-Type': 'application/json' } : {}),
       },
     });
-    if (res.status === 401) throw new Error('La clave de GitHub no es válida o venció. Revisa ⚙.');
-    if (res.status === 403 || res.status === 404) throw new Error(`GitHub no deja usar ${repo()} con esta clave (${res.status}). Revisa que tenga Actions: Read and write.`);
-    if (!res.ok) throw new Error(`GitHub respondió ${res.status}.`);
+    if (res.status === 401) throw new Error('The GitHub key is invalid or expired. Check ⚙.');
+    if (res.status === 403 || res.status === 404) throw new Error(`GitHub won't let this key use ${repo()} (${res.status}). Check it has Actions: Read and write.`);
+    if (!res.ok) throw new Error(`GitHub answered ${res.status}.`);
     return res.status === 204 ? null : res.json().catch(() => null);
   }
 
@@ -45,7 +45,7 @@
       const run = (list.workflow_runs || []).find(r => r.name === requestId || r.display_title === requestId);
       if (run) runId = run.id;
     }
-    if (!runId) throw new Error('GitHub no inició la descarga. Intenta de nuevo.');
+    if (!runId) throw new Error('GitHub did not start the download. Try again.');
     return { runId, requestId, codes, startedAt: Date.now() };
   }
 
@@ -53,8 +53,8 @@
 
   // ── Board ──
   const LABEL = {
-    queued: 'EN COLA', running: 'BUSCANDO', done: '✓ LISTO',
-    invalid: 'CÓDIGO INVÁLIDO', failed: '✗ FALLÓ', cancelled: 'CANCELADO',
+    queued: 'QUEUED', running: 'SEARCHING', done: '✓ DONE',
+    invalid: 'INVALID ID', failed: '✗ FAILED', cancelled: 'CANCELLED',
   };
   let current = store.json(K.run);
   let timer = null;
@@ -74,11 +74,11 @@
   function renderSummary(states, run) {
     const s = KT.summary(states);
     $('mercury').style.width = `${s.total ? Math.round((s.finished / s.total) * 100) : 0}%`;
-    const parts = [`${s.done}/${s.total} DESCARGADOS`];
-    if (s.invalid) parts.push(`${s.invalid} INVÁLIDOS`);
-    if (s.failed) parts.push(`${s.failed} FALLIDOS`);
+    const parts = [`${s.done}/${s.total} DOWNLOADED`];
+    if (s.invalid) parts.push(`${s.invalid} INVALID`);
+    if (s.failed) parts.push(`${s.failed} FAILED`);
     let line = parts.join(' · ');
-    if (!run || run.status !== 'completed') line = (s.finished ? 'PROCESANDO · ' : 'INICIANDO · ') + line;
+    if (!run || run.status !== 'completed') line = (s.finished ? 'PROCESSING · ' : 'STARTING · ') + line;
     $('summary').textContent = line;
   }
 
@@ -124,9 +124,9 @@
         window.open(url, '_blank', 'noopener');
       }
     } else if (run.conclusion !== 'cancelled') {
-      $('summary').textContent += ' · SIN PDFs PARA DESCARGAR';
+      $('summary').textContent += ' · NO PDFs TO DOWNLOAD';
     }
-    if (run.conclusion === 'cancelled') $('summary').textContent = 'CANCELADO · ' + $('summary').textContent;
+    if (run.conclusion === 'cancelled') $('summary').textContent = 'CANCELLED · ' + $('summary').textContent;
     store.set(K.run, JSON.stringify(current));
   }
 
@@ -168,25 +168,25 @@
 
   $('btnDownload').addEventListener('click', async () => {
     const { codes, rejected, tooMany } = KT.parseCodes($('codes').value);
-    if (!codes.length) return showMsg('Pega al menos un código.', 'bad');
-    if (tooMany) return showMsg(`Máximo ${KT.MAX_CODES} códigos por vez.`, 'bad');
-    if (!token()) { showMsg('Primero agrega tu clave de GitHub.', 'bad'); return openSettings(); }
-    if (current && !current.finished && !confirm('Hay una descarga en curso. ¿Empezar otra igual?')) return;
-    showMsg(rejected.length ? `Se omiten por formato: ${rejected.join(', ')}` : '');
+    if (!codes.length) return showMsg('Paste at least one device ID.', 'bad');
+    if (tooMany) return showMsg(`Max ${KT.MAX_CODES} IDs at a time.`, 'bad');
+    if (!token()) { showMsg('Add your GitHub key first.', 'bad'); return openSettings(); }
+    if (current && !current.finished && !confirm('A download is already running. Start another one anyway?')) return;
+    showMsg(rejected.length ? `Skipped (bad format): ${rejected.join(', ')}` : '');
     $('btnDownload').disabled = true;
-    $('btnDownload').textContent = '[ INICIANDO… ]';
+    $('btnDownload').textContent = '[ STARTING… ]';
     try {
       follow(await startRun(codes));
     } catch (e) {
       showMsg(e.message, 'bad');
     } finally {
-      $('btnDownload').textContent = '[ DESCARGAR PDFs ]';
+      $('btnDownload').textContent = '[ DOWNLOAD PDFs ]';
       $('btnDownload').disabled = !!(current && !current.finished);
     }
   });
 
   $('cancelBtn').addEventListener('click', async () => {
-    if (!current || !confirm('¿Cancelar la descarga en curso?')) return;
+    if (!current || !confirm('Cancel the running download?')) return;
     try { await gh(`/actions/runs/${current.runId}/cancel`, { method: 'POST' }); poll(); }
     catch (e) { showMsg(e.message, 'bad'); }
   });
@@ -208,7 +208,7 @@
     $('repoName').textContent = name;
     const owner = repo().split('/')[0];
     $('tokenLink').href = `https://github.com/settings/personal-access-tokens/new?name=${encodeURIComponent('Kuai Temperature')}` +
-      `&description=${encodeURIComponent('Inicia las descargas de Frigga desde la página')}&target_name=${encodeURIComponent(owner)}&expires_in=366&actions=write`;
+      `&description=${encodeURIComponent('Starts Frigga downloads from the Kuai Temperature page')}&target_name=${encodeURIComponent(owner)}&expires_in=366&actions=write`;
     $('settings').showModal();
   }
   $('settingsBtn').addEventListener('click', openSettings);
@@ -217,13 +217,22 @@
     store.set(K.token, $('tokenInput').value.trim() || null);
     const r = $('repoInput').value.trim();
     store.set(K.repo, /^[\w.-]+\/[\w.-]+$/.test(r) ? r : null);
-    showMsg(token() ? 'Clave guardada.' : '');
+    showMsg(token() ? 'Key saved.' : '');
   });
 
   // ── Clock ──
-  const tick = () => { $('clock').textContent = new Date().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); };
+  const tick = () => { $('clock').textContent = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }); };
   tick();
   setInterval(tick, 10000);
+
+  // ── Week ticker (Chinese): "Today we are in week N" ──
+  const week = () => {
+    const { year, week } = KT.isoWeek(new Date());
+    const text = `今天我们在第${week}周（${year}年） ▸ `;
+    $('tickerText').textContent = $('tickerText2').textContent = text.repeat(4);
+  };
+  week();
+  setInterval(week, 60 * 60 * 1000);
   // Running timers move every second without hitting the API.
   setInterval(() => { if (current && !current.finished && lastStates.length) renderRows(lastStates); }, 1000);
 
@@ -233,5 +242,5 @@
   $('codes').value = store.get(K.codes) || '';
   updateCounter();
   if (current) follow(current);
-  if (!token()) showMsg('Primera vez: agrega tu clave de GitHub en ⚙.', '');
+  if (!token()) showMsg('First time: add your GitHub key in ⚙.', '');
 })();

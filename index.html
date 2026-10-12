@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Kuai Temperature</title>
-  <meta name="description" content="Descarga automática de reportes PDF de termógrafos Frigga">
+  <meta name="description" content="Automatic PDF report downloads from Frigga temperature loggers">
   <meta name="theme-color" content="#01070d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -18,11 +18,11 @@
 </head>
 <body>
   <header class="top">
-    <div class="brand"><span class="sys">COLD-CHAIN TERMINAL</span><span class="sys dim">FRIGGA · PDF</span></div>
-    <div class="board-title"><span class="bt-en">TEMPERATURE</span><span class="bt-zh">温度</span></div>
+    <div class="brand"></div>
+    <div class="board-title"><span class="bt-en">KUAI TEMPERATURE</span><span class="bt-zh">温度</span></div>
     <div class="top-actions">
       <span id="clock" class="clock">--:--</span>
-      <button class="icon-btn" id="settingsBtn" title="Configuración" aria-label="Configuración">⚙</button>
+      <button class="icon-btn" id="settingsBtn" title="Settings" aria-label="Settings">⚙</button>
     </div>
   </header>
 
@@ -35,60 +35,64 @@
       <div class="prompt-box">
         <span class="cursor" aria-hidden="true">&gt;</span>
         <textarea id="codes" rows="7" spellcheck="false" autocapitalize="characters" autocomplete="off"
-          placeholder="PEGA LOS CÓDIGOS AQUÍ&#10;UNO POR LÍNEA O SEPARADOS POR COMA&#10;&#10;VB8DN022&#10;ABC12345"></textarea>
+          placeholder="PASTE DEVICE IDS HERE&#10;ONE PER LINE OR COMMA-SEPARATED&#10;&#10;VB8DN022&#10;ABC12345"></textarea>
       </div>
       <div class="actions">
-        <button id="btnDownload" class="btn primary">[ DESCARGAR PDFs ]</button>
-        <button id="btnClear" class="btn">[ LIMPIAR ]</button>
+        <button id="btnDownload" class="btn primary">[ DOWNLOAD PDFs ]</button>
+        <button id="btnClear" class="btn">[ CLEAR ]</button>
       </div>
       <p id="msg" class="msg" hidden></p>
     </section>
 
     <section class="board" id="board" hidden>
-      <div class="b-head"><span>Código</span><span>Estado</span><span>Tiempo</span></div>
+      <div class="b-head"><span>Device ID</span><span>Status</span><span>Time</span></div>
       <div id="rows"></div>
       <div class="b-foot">
         <div class="thermo" aria-hidden="true"><i class="bulb"></i><span class="tube"><i id="mercury"></i></span></div>
-        <p id="summary" class="summary">EN COLA…</p>
+        <p id="summary" class="summary">QUEUED…</p>
         <div class="actions">
-          <a id="zipBtn" class="btn primary" hidden target="_blank" rel="noopener">[ ⬇ DESCARGAR ZIP ]</a>
-          <button id="cancelBtn" class="btn">[ CANCELAR ]</button>
-          <button id="newBtn" class="btn" hidden>[ NUEVA DESCARGA ]</button>
-          <a id="runLink" class="btn ghost" target="_blank" rel="noopener">VER EN GITHUB ↗</a>
+          <a id="zipBtn" class="btn primary" hidden target="_blank" rel="noopener">[ ⬇ DOWNLOAD ZIP ]</a>
+          <button id="cancelBtn" class="btn">[ CANCEL ]</button>
+          <button id="newBtn" class="btn" hidden>[ NEW DOWNLOAD ]</button>
+          <a id="runLink" class="btn ghost" target="_blank" rel="noopener">VIEW ON GITHUB ↗</a>
         </div>
       </div>
     </section>
 
     <section class="how">
-      <h2>&gt; CÓMO FUNCIONA</h2>
+      <h2>&gt; HOW IT WORKS</h2>
       <ol>
-        <li>Pega los códigos de los termógrafos (máximo 30).</li>
-        <li>Presiona <b>DESCARGAR PDFs</b>. Un navegador real en GitHub entra a Frigga, busca cada código y exporta “Complete data”, hasta 5 a la vez.</li>
-        <li>Al terminar se abre la descarga del ZIP con todos los PDF. Los códigos inválidos se saltan.</li>
+        <li>Paste the logger device IDs (max 30).</li>
+        <li>Press <b>DOWNLOAD PDFs</b>. A real browser on GitHub opens Frigga, searches each ID and exports “Complete data”, up to 5 at a time.</li>
+        <li>When it finishes, the ZIP with every PDF opens for download. Invalid IDs are skipped.</li>
       </ol>
-      <p class="dim">La primera vez pide una clave de GitHub en ⚙. Puedes cerrar la página: al volver sigue mostrando la última descarga.</p>
+      <p class="dim">The first time, add a GitHub key in ⚙. You can close the page: when you come back it still shows the last download.</p>
     </section>
   </main>
 
+  <footer class="ticker" aria-label="Current week">
+    <div class="ticker-track"><span id="tickerText"></span><span id="tickerText2" aria-hidden="true"></span></div>
+  </footer>
+
   <dialog id="settings">
     <form method="dialog" class="sheet">
-      <h2>&gt; CONFIGURACIÓN</h2>
+      <h2>&gt; SETTINGS</h2>
       <label class="field">
-        <span>Clave de GitHub (token)</span>
+        <span>GitHub key (token)</span>
         <input type="password" id="tokenInput" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
       </label>
       <ol class="steps">
-        <li>Abre <a id="tokenLink" target="_blank" rel="noopener">crear clave en GitHub ↗</a>.</li>
+        <li>Open <a id="tokenLink" target="_blank" rel="noopener">create a key on GitHub ↗</a>.</li>
         <li><b>Repository access</b>: Only select repositories → <b id="repoName">Kuai-Temperature</b>.</li>
         <li><b>Permissions</b> → Repository → <b>Actions: Read and write</b>.</li>
-        <li>Generate token, cópiala y pégala arriba.</li>
+        <li>Generate token, copy it and paste it above.</li>
       </ol>
-      <p class="dim">La clave queda guardada solo en este navegador y solo sirve para iniciar las descargas de este repositorio.</p>
+      <p class="dim">The key is saved only in this browser and can only start downloads in this repository.</p>
       <label class="field">
-        <span>Repositorio</span>
+        <span>Repository</span>
         <input type="text" id="repoInput" spellcheck="false" autocomplete="off">
       </label>
-      <div class="actions"><button class="btn primary" value="save" id="saveSettings">[ GUARDAR ]</button><button class="btn" value="cancel">[ CERRAR ]</button></div>
+      <div class="actions"><button class="btn primary" value="save" id="saveSettings">[ SAVE ]</button><button class="btn" value="cancel">[ CLOSE ]</button></div>
     </form>
   </dialog>
 
