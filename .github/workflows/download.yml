@@ -1,6 +1,6 @@
 name: Frigga download
 # The page starts this workflow and finds its run by this name.
-run-name: ${{ inputs.request_id || 'test' }}
+run-name: ${{ inputs.request_id }}
 
 on:
   workflow_dispatch:
@@ -14,9 +14,6 @@ on:
         required: false
         type: string
         default: 'manual'
-  # TEMP: test run on the PR branch, removed before merge.
-  push:
-    branches: [link-app]
 
 permissions:
   contents: read
@@ -30,7 +27,7 @@ jobs:
     steps:
       - id: parse
         env:
-          CODES: ${{ inputs.codes || 'VB8DN022 BADCODE1' }}
+          CODES: ${{ inputs.codes }}
         run: |
           node -e '
             const codes = [...new Set(process.env.CODES.split(/[\s,;]+/).map(c => c.trim().toUpperCase()).filter(c => /^[A-Z0-9-]{3,40}$/.test(c)))].slice(0, 30);
