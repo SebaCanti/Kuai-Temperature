@@ -42,8 +42,10 @@ a { color: var(--bright); }
 }
 .brand { display: flex; flex-direction: column; font-size: 16px; letter-spacing: 2px; min-width: 0; }
 .board-title { display: flex; align-items: baseline; gap: 12px; justify-self: center; white-space: nowrap; }
-.bt-en { font-size: 40px; letter-spacing: 4px; }
-.bt-zh { font-size: 28px; font-family: "Noto Sans SC", sans-serif; }
+/* One size for both: the Chinese is scaled down so its glyphs match the VT323 capitals. */
+.board-title { font-size: 32px; line-height: 1; align-items: center; }
+.bt-en { font-size: 1em; letter-spacing: 3px; }
+.bt-zh { font-size: .75em; font-family: "Noto Sans SC", sans-serif; letter-spacing: 2px; }
 .top-actions { justify-self: end; display: flex; align-items: center; gap: 8px; }
 .clock { font-size: 36px; font-variant-numeric: tabular-nums; }
 .icon-btn {
@@ -132,8 +134,8 @@ dialog::backdrop { background: rgba(0, 0, 0, .7); }
   .top { grid-template-columns: 1fr auto; }
   .brand { display: none; }
   .board-title { justify-self: start; gap: 6px; }
-  .bt-en { font-size: 28px; letter-spacing: 1px; }
-  .bt-zh { font-size: 20px; }
+  .board-title { font-size: 26px; }
+  .bt-en { letter-spacing: 1px; }
   .clock { font-size: 24px; }
   .b-head { display: none; }
   .b-row { grid-template-columns: 1fr auto; grid-template-areas: "c t" "s s"; gap: 0 10px; font-size: 21px; }
@@ -155,8 +157,10 @@ main { padding-bottom: 72px; }
 @media (max-width: 700px) {
   .top { padding: 12px; }
   .board-title { gap: 4px; min-width: 0; }
-  .bt-en { font-size: 22px; letter-spacing: 0; }
-  .bt-zh { font-size: 16px; }
+  .board-title { font-size: 20px; }
+  .top { gap: 8px; }
+  .bt-en { letter-spacing: 0; }
+  .bt-zh { letter-spacing: 0; }
   .clock { font-size: 18px; }
   .top-actions { gap: 4px; }
   .icon-btn { width: 32px; height: 32px; font-size: 16px; }
