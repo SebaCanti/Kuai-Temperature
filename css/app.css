@@ -139,3 +139,25 @@ dialog::backdrop { background: rgba(0, 0, 0, .7); }
   .b-row { grid-template-columns: 1fr auto; grid-template-areas: "c t" "s s"; gap: 0 10px; font-size: 21px; }
   .b-code { grid-area: c; } .b-time { grid-area: t; } .b-status { grid-area: s; }
 }
+
+/* ── Week ticker: scrolling strip pinned to the bottom ── */
+main { padding-bottom: 72px; }
+.ticker {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; overflow: hidden;
+  border-top: 1px solid var(--text); background: rgba(1, 7, 13, .94);
+  padding: 6px 0 calc(6px + env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 20px rgba(110, 243, 255, .15);
+}
+.ticker-track { display: flex; width: max-content; animation: ticker 150s linear infinite; }
+.ticker-track span { white-space: nowrap; font: 700 20px/1.2 "Noto Sans SC", sans-serif; letter-spacing: 2px; padding-right: 0; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .ticker-track { animation-duration: 120s; } }
+@media (max-width: 700px) {
+  .top { padding: 12px; }
+  .board-title { gap: 4px; min-width: 0; }
+  .bt-en { font-size: 22px; letter-spacing: 0; }
+  .bt-zh { font-size: 16px; }
+  .clock { font-size: 18px; }
+  .top-actions { gap: 4px; }
+  .icon-btn { width: 32px; height: 32px; font-size: 16px; }
+}

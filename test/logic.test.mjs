@@ -40,3 +40,9 @@ test('fmtElapsed', () => {
   assert.equal(KT.fmtElapsed(65000), '01:05');
   assert.equal(KT.fmtElapsed(null), '--:--');
 });
+
+test('isoWeek', () => {
+  assert.deepEqual(KT.isoWeek(new Date(2026, 9, 12)), { year: 2026, week: 42 });
+  assert.deepEqual(KT.isoWeek(new Date(2026, 0, 1)), { year: 2026, week: 1 });
+  assert.deepEqual(KT.isoWeek(new Date(2027, 0, 1)), { year: 2026, week: 53 });
+});

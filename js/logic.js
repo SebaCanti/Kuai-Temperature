@@ -65,7 +65,16 @@
     return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
   }
 
-  const api = { MAX_CODES, parseCodes, repoFromLocation, jobState, codeStates, summary, fmtElapsed };
+  // ISO-8601 week number (weeks start Monday; week 1 holds the year's first Thursday).
+  function isoWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const day = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - day);
+    const yearStart = Date.UTC(d.getUTCFullYear(), 0, 1);
+    return { year: d.getUTCFullYear(), week: Math.ceil(((d - yearStart) / 86400000 + 1) / 7) };
+  }
+
+  const api = { MAX_CODES, parseCodes, repoFromLocation, jobState, codeStates, summary, fmtElapsed, isoWeek };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.KT = api;
 })(typeof self !== 'undefined' ? self : this);
