@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Kuai Temperature</title>
+  <meta name="description" content="Descarga automática de reportes PDF de termógrafos Frigga">
+  <meta name="theme-color" content="#01070d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Kuai Temperature">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=VT323&family=Noto+Sans+SC:wght@700&display=swap">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand"><span class="sys">COLD-CHAIN TERMINAL</span><span class="sys dim">FRIGGA · PDF</span></div>
+    <div class="board-title"><span class="bt-en">TEMPERATURE</span><span class="bt-zh">温度</span></div>
+    <div class="top-actions">
+      <span id="clock" class="clock">--:--</span>
+      <button class="icon-btn" id="settingsBtn" title="Configuración" aria-label="Configuración">⚙</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="console" id="console">
+      <div class="console-head">
+        <span>&gt; DEVICE IDS <small>设备</small></span>
+        <span id="counter" class="counter">0/30</span>
+      </div>
+      <div class="prompt-box">
+        <span class="cursor" aria-hidden="true">&gt;</span>
+        <textarea id="codes" rows="7" spellcheck="false" autocapitalize="characters" autocomplete="off"
+          placeholder="PEGA LOS CÓDIGOS AQUÍ&#10;UNO POR LÍNEA O SEPARADOS POR COMA&#10;&#10;VB8DN022&#10;ABC12345"></textarea>
+      </div>
+      <div class="actions">
+        <button id="btnDownload" class="btn primary">[ DESCARGAR PDFs ]</button>
+        <button id="btnClear" class="btn">[ LIMPIAR ]</button>
+      </div>
+      <p id="msg" class="msg" hidden></p>
+    </section>
+
+    <section class="board" id="board" hidden>
+      <div class="b-head"><span>Código</span><span>Estado</span><span>Tiempo</span></div>
+      <div id="rows"></div>
+      <div class="b-foot">
+        <div class="thermo" aria-hidden="true"><i class="bulb"></i><span class="tube"><i id="mercury"></i></span></div>
+        <p id="summary" class="summary">EN COLA…</p>
+        <div class="actions">
+          <a id="zipBtn" class="btn primary" hidden target="_blank" rel="noopener">[ ⬇ DESCARGAR ZIP ]</a>
+          <button id="cancelBtn" class="btn">[ CANCELAR ]</button>
+          <button id="newBtn" class="btn" hidden>[ NUEVA DESCARGA ]</button>
+          <a id="runLink" class="btn ghost" target="_blank" rel="noopener">VER EN GITHUB ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="how">
+      <h2>&gt; CÓMO FUNCIONA</h2>
+      <ol>
+        <li>Pega los códigos de los termógrafos (máximo 30).</li>
+        <li>Presiona <b>DESCARGAR PDFs</b>. Un navegador real en GitHub entra a Frigga, busca cada código y exporta “Complete data”, hasta 5 a la vez.</li>
+        <li>Al terminar se abre la descarga del ZIP con todos los PDF. Los códigos inválidos se saltan.</li>
+      </ol>
+      <p class="dim">La primera vez pide una clave de GitHub en ⚙. Puedes cerrar la página: al volver sigue mostrando la última descarga.</p>
+    </section>
+  </main>
+
+  <dialog id="settings">
+    <form method="dialog" class="sheet">
+      <h2>&gt; CONFIGURACIÓN</h2>
+      <label class="field">
+        <span>Clave de GitHub (token)</span>
+        <input type="password" id="tokenInput" placeholder="github_pat_…" autocomplete="off" spellcheck="false">
+      </label>
+      <ol class="steps">
+        <li>Abre <a id="tokenLink" target="_blank" rel="noopener">crear clave en GitHub ↗</a>.</li>
+        <li><b>Repository access</b>: Only select repositories → <b id="repoName">Kuai-Temperature</b>.</li>
+        <li><b>Permissions</b> → Repository → <b>Actions: Read and write</b>.</li>
+        <li>Generate token, cópiala y pégala arriba.</li>
+      </ol>
+      <p class="dim">La clave queda guardada solo en este navegador y solo sirve para iniciar las descargas de este repositorio.</p>
+      <label class="field">
+        <span>Repositorio</span>
+        <input type="text" id="repoInput" spellcheck="false" autocomplete="off">
+      </label>
+      <div class="actions"><button class="btn primary" value="save" id="saveSettings">[ GUARDAR ]</button><button class="btn" value="cancel">[ CERRAR ]</button></div>
+    </form>
+  </dialog>
+
+  <script src="js/logic.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

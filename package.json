@@ -1,20 +1,16 @@
 {
   "name": "kuai-temperature",
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "private": true,
   "description": "Kuai Temperature - Automatic Frigga thermograph PDF downloader",
-  "main": "backend/server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "node backend/server.js"
+    "download": "node scripts/download.js",
+    "test": "node --test test/*.test.mjs"
   },
   "dependencies": {
-    "express": "^4.21.0",
-    "puppeteer": "^23.4.0",
-    "archiver": "^7.0.1",
-    "cors": "^2.8.5",
-    "multer": "^1.4.5-lts.1"
+    "puppeteer-core": "^23.4.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   }
 }
