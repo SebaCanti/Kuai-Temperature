@@ -46,3 +46,12 @@ test('isoWeek', () => {
   assert.deepEqual(KT.isoWeek(new Date(2026, 0, 1)), { year: 2026, week: 1 });
   assert.deepEqual(KT.isoWeek(new Date(2027, 0, 1)), { year: 2026, week: 53 });
 });
+
+test('isRaining', () => {
+  assert.equal(KT.isRaining({ weather_code: 61, rain: 1.2 }), true);  // rain
+  assert.equal(KT.isRaining({ weather_code: 3, showers: 0.4 }), true);    // showers
+  assert.equal(KT.isRaining({ weather_code: 95 }), true);    // thunderstorm
+  assert.equal(KT.isRaining({ weather_code: 3, rain: 0 }), false);    // overcast
+  assert.equal(KT.isRaining({ weather_code: 71, rain: 0, showers: 0 }), false);   // snow
+  assert.equal(KT.isRaining(null), false);
+});
