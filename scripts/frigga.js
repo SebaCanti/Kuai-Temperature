@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 const path = require('path');
 const fs = require('fs');
 
@@ -19,7 +19,9 @@ async function downloadDevicePDF(deviceId, downloadDir, maxRetries = 4) {
 
       // Si es un código inválido, NO reintentar
       if (err.message === 'INVALID_DEVICE_ID') {
-        throw new Error('Código inválido (The device ID is not correct)');
+        const invalid = new Error('Código inválido (The device ID is not correct)');
+        invalid.code = 'INVALID_DEVICE_ID';
+        throw invalid;
       }
       
       if (attempt < maxRetries) {
@@ -35,6 +37,8 @@ async function downloadDevicePDF(deviceId, downloadDir, maxRetries = 4) {
 
 async function tryDownload(deviceId, downloadDir, attempt) {
   const browser = await puppeteer.launch({
+    // GitHub's Ubuntu runners come with Google Chrome installed; CHROME_PATH points to it.
+    executablePath: process.env.CHROME_PATH || '/usr/bin/google-chrome',
     headless: true,
     args: [
       '--no-sandbox',

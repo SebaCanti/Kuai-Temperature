@@ -3,4 +3,3 @@ downloads/
 *.log
 .DS_Store
 .env
-package-lock.json

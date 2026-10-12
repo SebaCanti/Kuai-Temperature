@@ -1,0 +1,89 @@
+name: Frigga download
+# The page starts this workflow and finds its run by this name.
+run-name: ${{ inputs.request_id || 'test' }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      codes:
+        description: 'Device IDs (one per line, or separated by spaces or commas). Max 30.'
+        required: true
+        type: string
+      request_id:
+        description: 'Set by the page to find this run'
+        required: false
+        type: string
+        default: 'manual'
+  # TEMP: test run on the PR branch, removed before merge.
+  push:
+    branches: [link-app]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      codes: ${{ steps.parse.outputs.codes }}
+    steps:
+      - id: parse
+        env:
+          CODES: ${{ inputs.codes || 'VB8DN022 BADCODE1' }}
+        run: |
+          node -e '
+            const codes = [...new Set(process.env.CODES.split(/[\s,;]+/).map(c => c.trim().toUpperCase()).filter(c => /^[A-Z0-9-]{3,40}$/.test(c)))].slice(0, 30);
+            if (!codes.length) { console.error("No valid codes"); process.exit(1); }
+            console.log(codes.join("\n"));
+            require("fs").appendFileSync(process.env.GITHUB_OUTPUT, "codes=" + JSON.stringify(codes) + "\n");
+          '
+
+  download:
+    needs: plan
+    # The page reads each code's progress from these job names.
+    name: DL ${{ matrix.code }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      # A few at a time so Frigga isn't hammered.
+      max-parallel: 5
+      matrix:
+        code: ${{ fromJSON(needs.plan.outputs.codes) }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - id: dl
+        name: Download PDF
+        env:
+          CODE: ${{ matrix.code }}
+        run: node scripts/download.js "$CODE" downloads
+      # Only runs for codes Frigga rejects; the page shows them as INVALID instead of FAILED.
+      - name: Invalid code
+        if: steps.dl.outputs.status == 'invalid'
+        run: echo "Frigga says this device ID is not correct."
+      - uses: actions/upload-artifact@v4
+        if: steps.dl.outputs.status == 'ok'
+        with:
+          name: pdf-${{ matrix.code }}
+          path: downloads/*.pdf
+          retention-days: 1
+
+  zip:
+    needs: download
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      # One artifact with every PDF: that is the ZIP the page hands out.
+      - uses: actions/upload-artifact/merge@v4
+        continue-on-error: true
+        with:
+          name: kuai-temperature-pdfs
+          pattern: pdf-*
+          delete-merged: true
+          retention-days: 1
